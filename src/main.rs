@@ -3,11 +3,14 @@ use dotenv::dotenv;
 use std::env;
 
 mod controllers;
+mod database;
 mod routes;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     dotenv().ok();
+
+    let mongo_client = database::get_mongo_client().await;
 
     let port = match env::var("PORT") {
         Ok(s) => match s.parse::<u16>() {
@@ -23,8 +26,12 @@ async fn main() -> std::io::Result<()> {
         }
     };
 
-    HttpServer::new(|| App::new().configure(routes::product_route::config))
-        .bind(("127.0.0.1", port))?
-        .run()
-        .await
+    HttpServer::new(move || {
+        App::new()
+            .app_data(actix_web::web::Data::new(mongo_client.clone()))
+            .configure(routes::init)
+    })
+    .bind(("127.0.0.1", port))?
+    .run()
+    .await
 }

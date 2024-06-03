@@ -1,11 +1,10 @@
-use crate::controllers::*;
+use crate::controllers::product_controller::*;
 use actix_web::web;
 
 pub fn config(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api/v1")
-            .route("/", web::get().to(product_controller::hello))
-            .route("/hey", web::get().to(product_controller::hey))
-            .route("/echo", web::post().to(product_controller::echo)),
+            .route("/product", web::get().to(get_products))
+            .route("/product", web::post().to(add_product)),
     );
 }
