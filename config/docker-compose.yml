@@ -1,0 +1,29 @@
+version: '2.27'
+services:
+  mongodb:
+    image: mongo
+    container_name: mongodb_container_rustycart
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_volume_rustycart:/data/db
+    networks:
+      - network_rustycart
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo_express_container_rustycart
+    ports:
+      - "8081:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb_container_rustycart
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=password
+    networks:
+      - network_rustycart
+
+volumes:
+  mongodb_volume_rustycart:
+
+networks:
+  network_rustycart:
