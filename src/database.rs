@@ -1,4 +1,5 @@
-use mongodb::{options::ClientOptions, Client};
+use mongodb::{options::ClientOptions, Client, Collection};
+use serde::{de::DeserializeOwned, Serialize};
 use std::env;
 
 pub async fn get_mongo_client() -> Client {
@@ -14,4 +15,13 @@ pub async fn get_mongo_client() -> Client {
 
     // Create the MongoDB client
     Client::with_options(client_options).unwrap()
+}
+
+pub fn get_collection<T>(client: &Client, collection_name: &str) -> Collection<T>
+where
+    T: Serialize + DeserializeOwned + Unpin,
+{
+    let db_name = env::var("DB_NAME").expect("DB_NAME must be set");
+    let db = client.database(&db_name);
+    db.collection::<T>(collection_name)
 }

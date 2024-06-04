@@ -1,6 +1,7 @@
+use crate::database::get_collection;
 use actix_web::{web, HttpResponse, Responder};
 use futures::stream::StreamExt;
-use mongodb::{bson::doc, Client};
+use mongodb::{bson::doc, Client, Collection};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
@@ -11,8 +12,7 @@ pub struct Product {
 }
 
 pub async fn get_products(client: web::Data<Client>) -> impl Responder {
-    let db = client.database("db_rustycart");
-    let collection = db.collection::<Product>("products");
+    let collection: Collection<Product> = get_collection(&client, "products");
 
     let mut cursor = collection.find(None, None).await.unwrap();
     let mut products = Vec::new();
@@ -28,8 +28,7 @@ pub async fn get_products(client: web::Data<Client>) -> impl Responder {
 }
 
 pub async fn add_product(client: web::Data<Client>, item: web::Json<Product>) -> impl Responder {
-    let db = client.database("db_rustycart");
-    let collection = db.collection("products");
+    let collection: Collection<Product> = get_collection(&client, "products");
 
     let new_product = Product {
         name: item.name.clone(),
