@@ -4,7 +4,7 @@ use std::env;
 
 mod controllers;
 mod database;
-// mod models;
+mod models;
 mod routes;
 
 #[actix_web::main]

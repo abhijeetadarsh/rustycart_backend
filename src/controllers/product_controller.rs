@@ -1,18 +1,13 @@
 use crate::database::get_collection;
+use crate::models::product_model::Product;
 use actix_web::{web, HttpResponse, Responder};
 use futures::stream::StreamExt;
-use mongodb::{bson::doc, Client, Collection};
-use serde::{Deserialize, Serialize};
+use mongodb::{Client, Collection};
 
-#[derive(Serialize, Deserialize)]
-pub struct Product {
-    name: String,
-    price: f64,
-    description: Option<String>,
-}
+const COLLECTION_NAME: &str = "products";
 
 pub async fn get_products(client: web::Data<Client>) -> impl Responder {
-    let collection: Collection<Product> = get_collection(&client, "products");
+    let collection: Collection<Product> = get_collection(&client, COLLECTION_NAME);
 
     let mut cursor = collection.find(None, None).await.unwrap();
     let mut products = Vec::new();
@@ -28,13 +23,17 @@ pub async fn get_products(client: web::Data<Client>) -> impl Responder {
 }
 
 pub async fn add_product(client: web::Data<Client>, item: web::Json<Product>) -> impl Responder {
-    let collection: Collection<Product> = get_collection(&client, "products");
+    let collection: Collection<Product> = get_collection(&client, COLLECTION_NAME);
 
-    let new_product = Product {
-        name: item.name.clone(),
-        price: item.price,
-        description: item.description.clone(),
-    };
+    let new_product = Product::new(
+        item.name.clone(),
+        item.description.clone(),
+        item.price,
+        item.category.clone(),
+        item.user,
+        item.images.clone(),
+        Some(item.stock),
+    );
 
     let insert_result = collection.insert_one(new_product, None).await;
 
